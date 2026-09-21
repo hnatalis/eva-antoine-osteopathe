@@ -1,0 +1,16 @@
+{
+  "name": "Eva Antoine · Ostéopathe animalier",
+  "short_name": "Eva Antoine",
+  "description": "Ostéopathie animale : chevaux, bovins, chiens, chats, NAC, ovins et caprins.",
+  "lang": "fr",
+  "start_url": "/eva-antoine-osteopathe/",
+  "scope": "/eva-antoine-osteopathe/",
+  "display": "standalone",
+  "background_color": "#FBF8F3",
+  "theme_color": "#FBF8F3",
+  "icons": [
+    { "src": "assets/img/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/img/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/img/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

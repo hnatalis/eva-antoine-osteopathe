@@ -1,0 +1,835 @@
+/* ==========================================================================
+   Eva Antoine — Ostéopathe animalier
+   Feuille de style unique. Aucune dépendance, aucun build.
+
+   Conventions tenues dans tout le fichier :
+   - Jamais de raccourci `padding:` / `margin:` / `max-width` sur un élément qui
+     combine plusieurs classes de gabarit — formes logiques uniquement.
+   - Les paliers responsive sont écrits APRÈS la règle qu'ils surchargent
+     (une media query n'ajoute aucune spécificité, seul l'ordre tranche).
+   - Tout enfant de grille reçoit `min-width: 0`.
+   ========================================================================== */
+
+/* --- 1. Polices auto-hébergées (aucun appel à un CDN tiers) ---------------
+   Neue Haas Grotesk Display Pro, fournie par Eva. Quatre coupes, pas d'italique :
+   les rares `em` sont donc obliques de synthèse, ce qui est la norme pour une
+   grotesque. La numérotation Haas (55/65/75/95) est traduite en graisses CSS. */
+@font-face{font-family:'Neue Haas';font-style:normal;font-weight:300 450;font-display:swap;
+  src:url('../fonts/neuehaas-roman.woff2') format('woff2');}      /* 55 Roman */
+@font-face{font-family:'Neue Haas';font-style:normal;font-weight:500 600;font-display:swap;
+  src:url('../fonts/neuehaas-medium.woff2') format('woff2');}     /* 65 Medium */
+@font-face{font-family:'Neue Haas';font-style:normal;font-weight:700;font-display:swap;
+  src:url('../fonts/neuehaas-bold.woff2') format('woff2');}       /* 75 Bold */
+@font-face{font-family:'Neue Haas';font-style:normal;font-weight:800 900;font-display:swap;
+  src:url('../fonts/neuehaas-black.woff2') format('woff2');}      /* 95 Black */
+
+/* --- 2. Jetons ------------------------------------------------------------ */
+:root{
+  /* Palette d'Eva (fiche de retour V1) : tons clairs, terre cuite et sauge.
+     Ses six teintes sont toutes claires : aucune ne peut porter du texte à
+     4,5:1. Chacune existe donc en deux versions, la sienne pour les aplats et
+     une variante assombrie à teinte et saturation CONSTANTES pour le texte. */
+  --ink:#241C15; --ink-2:#4A3D30; --ink-3:#746452;
+  --paper:#FBF7F1; --sand:#F3E8DA; --sand-2:#E4CDBA; --line:#E7D9C9; --white:#fff;
+  /* La teinte la plus foncée du site est désormais SA terre cuite, assombrie
+     jusqu'à ce que toutes ses teintes claires passent 4,5:1 dessus (L 0,48 →
+     0,30, teinte et saturation inchangées). Telle quelle, #B4663F ne donnait
+     que 4,00:1 avec le crème : insuffisant pour du texte courant. */
+  --deep:#714028;
+  /* teintes d'Eva, telles quelles : décor uniquement */
+  --terra:#B4663F; --blush:#DEBFAA; --apricot:#D29169;
+  --creme:#F0DFCB; --sage:#C7C8BA; --sage-2:#9D977F;
+  /* variantes portantes */
+  --olive:#6B6650;         /* aplat pouvant recevoir du texte crème (5,40:1) */
+  --olive-deep:#56513F;    /* texte et pictogrammes sur fond clair */
+  --olive-soft:#EEEFE8;
+  --brass:#B4663F;         /* filets et puces, jamais du texte */
+  --brass-text:#9B5836;    /* même teinte, luminosité abaissée : 4,52:1 */
+  --brass-soft:#F8EDE4;
+  /* alias sémantiques — redéfinis dans la portée sombre plus bas */
+  --text:var(--ink); --text-soft:var(--ink-2); --text-faint:var(--ink-3);
+  --rule:var(--line); --surface:var(--white); --accent-text:var(--olive-deep);
+  /* gabarit */
+  --gutter:1.5rem; --measure:38rem; --radius:14px; --radius-lg:22px;
+  /* Ombres teintées de brun chaud : sur un fond crème, une ombre neutre
+     tire vers le bleu et salit la palette. */
+  --shadow-1:0 2px 4px rgba(58,38,26,.09), 0 10px 26px -10px rgba(58,38,26,.22);
+  /* Deux ombres de repos, volontairement discrètes : les boutons se posent
+     légèrement, les images encore moins. Elles ne doivent pas se voir,
+     seulement se sentir. */
+  --shadow-btn:0 1px 2px rgba(58,38,26,.08), 0 4px 10px -3px rgba(58,38,26,.16);
+  --shadow-img:0 2px 4px rgba(58,38,26,.06), 0 14px 30px -16px rgba(58,38,26,.24);
+  --shadow-2:0 3px 8px rgba(58,38,26,.10), 0 28px 56px -22px rgba(58,38,26,.36);
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --header-h:108px;
+  --consent-h:0px;   /* piloté en JS par ResizeObserver — voir CLAUDE.md */
+}
+/* Portée sombre : on REDÉFINIT les alias, on ne corrige pas règle par règle. */
+.dark, .site-foot, .hero-media-cap{
+  --text:#FBF8F3; --text-soft:#DED5C6; --text-faint:#C9BDAA;
+  --rule:rgba(251,248,243,.20); --surface:rgba(255,255,255,.06); --accent-text:#C9D3BC;
+}
+
+/* --- 3. Reset ------------------------------------------------------------- */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body,h1,h2,h3,h4,p,figure,blockquote,dl,dd,ul,ol{margin:0}
+ul[class],ol[class]{list-style:none;padding:0}
+.card ul,.acc ul,.prose ul,.prose ol{list-style:none;padding-left:0}
+img,picture,svg,video{display:block;max-width:100%}
+img,video{height:auto}                    /* sans quoi width/height déforment */
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:inherit}
+:where(h1,h2,h3,h4){text-wrap:balance}
+:where(p,li){text-wrap:pretty}
+
+/* --anchor-offset est mesuré en JavaScript : hauteur réelle de l'en-tête, plus
+   celle de la barre d'espèces là où elle existe.
+   ⚠ NE PAS ajouter en plus un `scroll-margin-top` sur les cibles : le padding
+   du conteneur et la marge de la cible s'ADDITIONNENT (relevé 296 px au lieu
+   de 148, soit exactement le double). Un seul des deux. */
+html{scroll-behavior:smooth;scroll-padding-top:var(--anchor-offset,calc(var(--header-h) + 1.25rem))}
+body{
+  background:var(--paper); color:var(--text);
+  font-family:'Neue Haas',-apple-system,'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-size:clamp(1rem,.972rem + .14vw,1.075rem); line-height:1.66;
+  font-weight:400; -webkit-font-smoothing:antialiased;
+  overflow-x:clip;
+}
+
+/* --- 4. Typographie ------------------------------------------------------
+   Une grotesque « Display » est dessinée pour les GRANDES tailles : elle a
+   besoin d'un interlettrage négatif marqué en titre, et légèrement positif
+   sous 14 px, sinon elle paraît tassée. */
+.display,h1,h2,h3,.h3{font-family:'Neue Haas',-apple-system,'Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-weight:600;letter-spacing:-.032em;line-height:1.03;color:var(--text)}
+h1,.h1{font-size:clamp(2.8rem,1.75rem + 4.4vw,5.2rem);line-height:.98;letter-spacing:-.04em}
+h2,.h2{font-size:clamp(2.05rem,1.45rem + 2.6vw,3.3rem);line-height:1.04;letter-spacing:-.032em}
+h3,.h3{font-size:clamp(1.28rem,1.14rem + .55vw,1.6rem);line-height:1.2;letter-spacing:-.018em}
+.h4{font-size:1.06rem;font-weight:600;letter-spacing:-.012em;line-height:1.4}
+
+.lede{font-size:clamp(1.14rem,1.04rem + .46vw,1.42rem);line-height:1.48;color:var(--text-soft);
+  font-weight:400;letter-spacing:-.012em}
+.small{font-size:.875rem;line-height:1.55;letter-spacing:.005em}
+.muted{color:var(--text-faint)}
+.measure{max-width:var(--measure)}          /* jamais sur un élément .wrap */
+.measure-wide{max-width:52rem}
+em,.serif-em{font-style:italic}
+
+/* --- 5. Gabarit ----------------------------------------------------------- */
+.wrap{
+  width:100%; max-width:1180px; margin-inline:auto;
+  padding-left:var(--gutter); padding-right:var(--gutter);                       /* repli */
+  padding-left:max(var(--gutter),env(safe-area-inset-left,0px));
+  padding-right:max(var(--gutter),env(safe-area-inset-right,0px));
+}
+.wrap-narrow{max-width:920px}
+.section{padding-block:clamp(4rem,7.5vw,7.5rem)}
+.section-tight{padding-block:clamp(3rem,5.5vw,5rem)}
+.section-sand{background:var(--sand)}
+.section-dark{background:var(--deep);--text:#FBF8F3;--text-soft:#DED5C6;--text-faint:#C9BDAA;
+  --rule:rgba(251,248,243,.20);--surface:rgba(255,255,255,.06);--accent-text:#C9D3BC}
+.rule{border:0;border-top:1px solid var(--rule)}
+.stack>*+*{margin-top:var(--stack-gap,1rem)}
+.grid{display:grid;gap:clamp(1.1rem,2vw,1.8rem)}
+.grid>*{min-width:0}                        /* largeur minimale automatique : toujours neutralisée */
+.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.section-head{display:flex;flex-direction:column;gap:.9rem;margin-bottom:clamp(2rem,3.5vw,3.2rem)}
+.skip{position:absolute;left:-9999px;top:0;z-index:1200;background:var(--ink);color:#fff;
+  padding-block:.7rem;padding-inline:1.1rem;border-radius:0 0 10px 0}
+.skip:focus{left:0}
+
+/* --- 6. Liens et boutons -------------------------------------------------- */
+.link{display:inline-flex;align-items:center;gap:.45rem;font-weight:500;color:var(--accent-text);
+  text-decoration:none;position:relative;padding-block:.15rem}
+.link::after{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:currentColor;
+  transform:scaleX(1);transform-origin:left;transition:transform .38s var(--ease);opacity:.45}
+.link .arw{transition:transform .38s var(--ease)}
+.link:hover .arw{transform:translateX(4px)}
+
+.btn{
+  --btn-bg:var(--ink); --btn-fg:#FBF8F3; --btn-bd:var(--ink);
+  display:inline-flex;align-items:center;justify-content:center;gap:.6rem;
+  font-family:inherit;font-size:.95rem;font-weight:500;letter-spacing:.005em;
+  line-height:1.2;text-decoration:none;cursor:pointer;position:relative;overflow:hidden;
+  padding-block:.95rem;padding-inline:1.5rem;border:1px solid var(--btn-bd);border-radius:100px;
+  background:var(--btn-bg);color:var(--btn-fg);box-shadow:var(--shadow-btn);
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease),background-color .3s var(--ease),
+             color .3s var(--ease),border-color .3s var(--ease);
+}
+.btn>*{position:relative;z-index:1}
+.btn-ghost{--btn-bg:transparent;--btn-fg:var(--text);--btn-bd:var(--rule)}
+.btn-olive{--btn-bg:var(--olive);--btn-fg:#fff;--btn-bd:var(--olive)}
+.btn-light{--btn-bg:#FBF8F3;--btn-fg:var(--ink);--btn-bd:#FBF8F3}
+.btn-sm{font-size:.875rem;padding-block:.62rem;padding-inline:1.05rem}
+.btn-lg{font-size:1.02rem;padding-block:1.1rem;padding-inline:1.9rem}
+.btn:disabled,.btn[aria-disabled='true']{opacity:.55;cursor:not-allowed}
+/* Reflet : l'essentiel du temps hors champ (cf. mémoire projet) */
+.btn-shine::before{content:'';position:absolute;inset:0 auto 0 -75%;width:60%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);
+  animation:shine 6.5s var(--ease) infinite}
+@keyframes shine{0%,62%{left:-75%}92%,100%{left:125%}}
+
+/* --- 7. En-tête ----------------------------------------------------------- */
+.site-head{position:sticky;top:0;z-index:900;background:rgba(251,248,243,.82);
+  backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px);
+  border-bottom:1px solid transparent;transition:border-color .3s var(--ease),background-color .3s var(--ease)}
+.site-head[data-scrolled='true']{border-bottom-color:var(--line);background:rgba(251,248,243,.94)}
+.head-in{display:flex;align-items:center;gap:1.25rem;min-height:var(--header-h)}
+.brand{display:flex;align-items:center;gap:.85rem;text-decoration:none;flex:0 0 auto;margin-right:auto}
+.brand-mark{flex:0 0 auto;width:76px;height:76px}
+.brand-txt{display:flex;flex-direction:column;line-height:1.12}
+.brand-name{font-family:inherit;font-size:2.12rem;font-weight:600;letter-spacing:-.03em}
+.brand-role{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint)}
+.nav{display:flex;align-items:center;gap:.15rem}
+.nav a{position:relative;text-decoration:none;font-size:.95rem;font-weight:700;color:var(--text-soft);
+  padding-block:.55rem;padding-inline:.8rem;border-radius:8px;
+  transition:color .25s var(--ease),background-color .25s var(--ease)}
+.nav a::after{content:'';position:absolute;left:.8rem;right:.8rem;bottom:.28rem;height:1.5px;
+  background:var(--olive);transform:scaleX(0);transform-origin:left;
+  transition:transform .38s var(--ease)}
+.nav a[aria-current='page']{color:var(--text)}
+.nav a[aria-current='page']::after{transform:scaleX(1)}
+.head-cta{flex:0 0 auto}
+.head-tel{display:none;flex:0 0 auto;width:44px;height:44px;padding:0;border:0;border-radius:50%;
+  background:var(--ink);color:#FBF8F3;align-items:center;justify-content:center;text-decoration:none;
+  transition:transform .3s var(--ease),background-color .3s var(--ease)}
+.burger{display:none;flex:0 0 auto;width:44px;height:44px;padding:0;border:1px solid var(--line);
+  border-radius:11px;background:transparent;cursor:pointer;align-items:center;justify-content:center}
+.burger span{display:block;width:18px;height:1.5px;background:var(--ink);position:relative;
+  transition:transform .3s var(--ease),background-color .2s}
+.burger span::before,.burger span::after{content:'';position:absolute;left:0;width:18px;height:1.5px;
+  background:var(--ink);transition:transform .3s var(--ease)}
+.burger span::before{top:-6px}.burger span::after{top:6px}
+.burger[aria-expanded='true'] span{background:transparent}
+.burger[aria-expanded='true'] span::before{transform:translateY(6px) rotate(45deg)}
+.burger[aria-expanded='true'] span::after{transform:translateY(-6px) rotate(-45deg)}
+
+.drawer{position:fixed;inset:var(--header-h) 0 0;z-index:880;background:var(--paper);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding-block:1.5rem 2rem;padding-inline:var(--gutter);
+  opacity:0;visibility:hidden;transform:translateY(-10px);
+  transition:opacity .2s var(--ease),transform .2s var(--ease),visibility .2s}
+.drawer[data-open='true']{opacity:1;visibility:visible;transform:none}
+/* Les entrées arrivent l'une après l'autre. Le dernier retard (5 × 26 ms) plus
+   la durée d'une entrée (110 ms) tiennent sous les 200 ms demandées. */
+.drawer nav a,.drawer-foot>*{opacity:0;transform:translateY(-6px);
+  transition:opacity .11s var(--ease),transform .11s var(--ease)}
+.drawer[data-open='true'] nav a,.drawer[data-open='true'] .drawer-foot>*{
+  opacity:1;transform:none;transition-delay:var(--d,0ms)}
+.drawer nav{display:flex;flex-direction:column}
+.drawer nav a{font-family:inherit;font-size:1.6rem;font-weight:700;letter-spacing:-.02em;text-decoration:none;
+  padding-block:.85rem;border-bottom:1px solid var(--line);color:var(--text)}
+.drawer nav a[aria-current='page']{color:var(--olive-deep)}
+.drawer-foot{display:flex;flex-direction:column;gap:.75rem;margin-top:1.5rem}
+
+/* --- 8. Héros -------------------------------------------------------------
+   Trois rôles, trois nœuds distincts, pour qu'aucune transformation n'écrase
+   la suivante :
+     .hero-frame picture  → le zoom d'ouverture (une seule fois)
+     .hero-frame img      → l'échelle pilotée par le défilement
+     .hero-blur           → la copie floue, révélée en fondu au défilement
+   Le voile est un dégradé à six arrêts : il se FOND dans la photo au lieu de
+   s'arrêter net. Le flou du panneau est porté par un pseudo-élément masqué,
+   pour qu'il se dissolve vers le haut sans emporter le texte avec lui.
+   `--hero-p` va de 0 à 1 et vient du script. */
+.hero{position:relative;padding-block:clamp(2rem,4vw,3.5rem) clamp(3rem,5vw,5.5rem)}
+.hero-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
+  grid-template-areas:'head media' 'rest media';
+  column-gap:clamp(2rem,4vw,4rem);row-gap:1.5rem;align-items:center}
+.hero-head{grid-area:head;align-self:end;display:flex;flex-direction:column;
+  align-items:flex-start;gap:1.4rem;position:relative}
+.hero-rest{grid-area:rest;align-self:start;display:flex;flex-direction:column;
+  align-items:flex-start;gap:1.5rem}
+.hero-media{grid-area:media}
+.hero h1{margin:0}
+.hero-lede{max-width:34rem}
+.hero-cta{display:flex;flex-wrap:wrap;gap:.75rem}
+.hero-meta{display:flex;flex-wrap:wrap;align-items:center;gap:.55rem 1.1rem;font-size:.875rem;
+  color:var(--text-faint)}
+.hero-meta span{display:inline-flex;align-items:center;gap:.4rem}
+
+/* `width:100%` n'est PAS décoratif : avec `aspect-ratio` et une largeur `auto`,
+   un `min-height` rend la hauteur définie et le navigateur en DÉDUIT la
+   largeur. Mesuré à 768 px : un cadre de 901 px dans une cellule de 720, soit
+   157 px de débordement. Une largeur définie inverse la déduction. */
+.hero-frame{position:relative;width:100%;overflow:hidden;border-radius:var(--radius-lg);
+  aspect-ratio:4/5;min-height:min(74vh,660px);background:var(--sand-2);box-shadow:var(--shadow-2)}
+.hero-frame picture,.hero-frame video{display:block;width:100%;height:100%;transform:scale(1.06);
+  animation:heroZoom 9s var(--ease) forwards}
+/* La vidéo remplit le cadre comme le ferait une photo. `object-fit` est
+   indispensable : sans lui une vidéo garde son ratio et laisse des bandes. */
+.hero-video{object-fit:cover;background:var(--sand-2)}
+@keyframes heroZoom{to{transform:scale(1)}}
+.hero-frame picture img,.hero-frame video{width:100%;height:100%;object-fit:cover}
+.hero-frame picture img{transform:scale(calc(1 + var(--hero-p,0) * .06))}
+/* Le <picture> flou est un bloc du flux : sans le positionner LUI, un
+   `inset:0` sur l'image se résout contre ce bloc, qui se trouve SOUS la photo
+   nette. C'est le conteneur qui doit se superposer. */
+.hero-blur-wrap{position:absolute;inset:0;width:100%;height:100%;
+  transform:none;animation:none;opacity:var(--hero-p,0);pointer-events:none}
+.hero-blur{width:100%;height:100%;object-fit:cover}
+/* Voile : six arrêts pour un fondu réellement progressif vers la photo. */
+.hero-frame::after{content:'';position:absolute;inset:0;pointer-events:none;
+  opacity:var(--scrim,0);
+  background:linear-gradient(to top,
+    rgba(18,15,11,.94) 0%, rgba(18,15,11,.87) 12%, rgba(18,15,11,.66) 30%,
+    rgba(18,15,11,.36) 48%, rgba(18,15,11,.12) 68%, rgba(18,15,11,0) 88%)}
+
+.hero-media-cap{position:absolute;left:1rem;right:auto;bottom:1rem;z-index:2;
+  max-width:calc(100% - 2rem);
+  display:flex;align-items:center;gap:.7rem;
+  padding-block:.7rem;padding-inline:.95rem;border-radius:12px;
+  background:rgba(22,19,15,.74);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  font-size:.815rem;color:#FBF8F3;opacity:calc(1 - var(--hero-p,0) * 2)}
+
+/* --- 9. Cartes ------------------------------------------------------------ */
+.card{position:relative;background:var(--surface);border:1px solid var(--rule);
+  border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow-img);
+  transition:transform .4s var(--ease),box-shadow .4s var(--ease),border-color .4s var(--ease)}
+.card-h{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem}
+.card-ico{flex:0 0 auto;width:42px;height:42px;border-radius:11px;background:var(--olive-soft);
+  color:var(--olive-deep);display:grid;place-items:center}
+.section-dark .card-ico,.dark .card-ico{background:rgba(201,211,188,.14);color:#C9D3BC}
+.card ul,.acc-card ul{display:flex;flex-direction:column;gap:.5rem}
+.card li,.acc-card li{position:relative;padding-left:1.15rem;font-size:.94rem;color:var(--text-soft)}
+.card li::before,.acc-card li::before{content:'';position:absolute;left:0;top:.62em;width:5px;height:5px;
+  border-radius:50%;background:var(--brass)}
+.section-dark .card li::before,.section-dark .acc-card li::before{background:#C9D3BC}
+
+/* Tuile espèce, en RANGÉE : icône, libellé, flèche. Le lien du titre est étiré
+   par ::after, donc toute la rangée est cliquable sans imbriquer de bouton
+   dans un lien. Hauteur : environ 200 px en colonne, 84 px en rangée. */
+.tile{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:center;gap:1rem;
+  background:var(--surface);border:1px solid var(--rule);border-radius:var(--radius);
+  box-shadow:var(--shadow-img);
+  padding-block:.95rem;padding-inline:1.1rem;overflow:hidden;
+  transition:transform .4s var(--ease),box-shadow .4s var(--ease),border-color .4s var(--ease)}
+.tile-ico{display:block;width:52px;height:52px;transition:transform .5s var(--ease)}
+.tile-ico img{width:100%;height:100%;object-fit:contain}
+.tile-txt{display:flex;flex-direction:column;gap:.12rem;min-width:0}
+.tile h3{font-size:1.18rem;line-height:1.2}
+.tile-sub{display:block;font-size:.845rem;color:var(--text-faint);line-height:1.3}
+.tile-go{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;
+  border:1px solid var(--rule);color:var(--accent-text);
+  transition:background-color .35s var(--ease),color .35s var(--ease),border-color .35s var(--ease)}
+.tile-go .arw{transition:transform .38s var(--ease)}
+.tile a{text-decoration:none}
+.tile a::after{content:'';position:absolute;inset:0;border-radius:inherit}
+.tile::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--olive);
+  transform:scaleY(0);transform-origin:bottom;transition:transform .5s var(--ease)}
+
+/* --- 10. Étapes ----------------------------------------------------------- */
+.steps{counter-reset:step;display:grid;gap:0}
+.step{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.4rem;
+  padding-block:1.6rem}
+.step+.step{border-top:1px solid var(--rule)}
+.step-n{counter-increment:step;flex:0 0 auto;width:46px;height:46px;border-radius:50%;
+  border:1px solid var(--rule);display:grid;place-items:center;
+  font-family:inherit;font-size:1.05rem;color:var(--accent-text);
+  transition:background-color .4s var(--ease),color .4s var(--ease),border-color .4s var(--ease)}
+.step-n::before{content:counter(step,decimal-leading-zero)}
+.step h3{margin-bottom:.35rem}
+.step p{color:var(--text-soft);font-size:.96rem}
+
+/* --- 11. Accordéon signes ------------------------------------------------- */
+.speciesbar{position:sticky;top:var(--header-h);z-index:600;background:rgba(251,248,243,.93);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.speciesbar-in{display:flex;gap:.4rem;overflow-x:auto;scrollbar-width:none;
+  padding-block:.7rem;-webkit-overflow-scrolling:touch}
+.speciesbar-in::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:.45rem;text-decoration:none;
+  font-size:.875rem;font-weight:450;color:var(--text-soft);
+  padding-block:.5rem;padding-inline:.9rem;border:1px solid var(--line);border-radius:100px;
+  background:var(--white);white-space:nowrap;
+  transition:color .25s var(--ease),background-color .25s var(--ease),border-color .25s var(--ease)}
+.chip[aria-current='true']{background:var(--ink);border-color:var(--ink);color:#FBF8F3}
+
+.species{padding-block:clamp(1.6rem,3.4vw,3.4rem)}
+.species+.species{border-top:1px solid var(--line)}
+.signs{columns:2;column-gap:2.5rem}
+.signs li{break-inside:avoid;position:relative;padding-left:1.5rem;padding-block:.4rem;
+  font-size:.955rem;color:var(--text-soft)}
+.signs li::before{content:'';position:absolute;left:0;top:.42em;width:12px;height:12px;
+  background-repeat:no-repeat;background-position:center;background-size:contain;opacity:.5}
+/* Empreintes : le tiret des listes de signes est remplacé par la trace
+   de chaque espèce. Sabot pour le cheval, onglons pour la vache et les
+   ovins, coussinets pour le chien, le chat et les NAC.
+   ⚠ Le data URI est entièrement percent-encodé (espaces, apostrophes,
+   dièse ET PARENTHÈSES). Une seule `)` venue d'un `rotate()` referme
+   le `url(` de la CSS au milieu de l'URI : l'image disparaît en silence.
+   Régénérer avec : python3 _source/build/empreintes.py --css */
+#cheval .signs li::before{background-image:url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27%23B4663F%27%3E%3Cpath%20d=%27M12%202.6c4.6%200%207.7%203.6%207.7%208.6%200%204.4-2.4%208.2-4.6%2010.2l-1.9-1.7c1.8-1.7%203.7-4.8%203.7-8.4%200-3.5-2-6-4.9-6s-4.9%202.5-4.9%206c0%203.6%201.9%206.7%203.7%208.4l-1.9%201.7C6.7%2019.4%204.3%2015.6%204.3%2011.2c0-5%203.1-8.6%207.7-8.6Z%27/%3E%3Cellipse%20cx=%2712%27%20cy=%2712.4%27%20rx=%271.9%27%20ry=%274.4%27/%3E%3C/svg%3E)}
+#chien .signs li::before{background-image:url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27%23B4663F%27%3E%3Cellipse%20cx=%276.1%27%20cy=%279.2%27%20rx=%272.5%27%20ry=%273.3%27%20transform=%27rotate%28-18%206.1%209.2%29%27/%3E%3Cellipse%20cx=%2710.3%27%20cy=%275.6%27%20rx=%272.4%27%20ry=%273.4%27%20transform=%27rotate%28-6%2010.3%205.6%29%27/%3E%3Cellipse%20cx=%2714.6%27%20cy=%275.9%27%20rx=%272.4%27%20ry=%273.4%27%20transform=%27rotate%287%2014.6%205.9%29%27/%3E%3Cellipse%20cx=%2718.4%27%20cy=%279.6%27%20rx=%272.5%27%20ry=%273.3%27%20transform=%27rotate%2820%2018.4%209.6%29%27/%3E%3Cpath%20d=%27M12.2%2012.1c3.9%200%206.6%202.6%206.6%205.4%200%202.6-2.3%204.2-6.6%204.2s-6.6-1.6-6.6-4.2c0-2.8%202.7-5.4%206.6-5.4Z%27/%3E%3C/svg%3E)}
+#chat .signs li::before{background-image:url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27%23B4663F%27%3E%3Cellipse%20cx=%276.4%27%20cy=%279.9%27%20rx=%272.3%27%20ry=%272.7%27%20transform=%27rotate%28-16%206.4%209.9%29%27/%3E%3Cellipse%20cx=%2710.2%27%20cy=%276.6%27%20rx=%272.2%27%20ry=%272.8%27/%3E%3Cellipse%20cx=%2714.2%27%20cy=%276.6%27%20rx=%272.2%27%20ry=%272.8%27/%3E%3Cellipse%20cx=%2718%27%20cy=%279.9%27%20rx=%272.3%27%20ry=%272.7%27%20transform=%27rotate%2816%2018%209.9%29%27/%3E%3Cpath%20d=%27M12.2%2012.6c3.5%200%206%202.3%206%204.7%200%202.3-2.1%203.7-6%203.7s-6-1.4-6-3.7c0-2.4%202.5-4.7%206-4.7Z%27/%3E%3C/svg%3E)}
+#vache .signs li::before{background-image:url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27%23B4663F%27%3E%3Cpath%20d=%27M10.6%202.7c1.5%200%202.4%201.2%202.4%203%200%203.6-1.3%2012.2-3.4%2015.6-.4.7-1.3.7-1.7%200C5.8%2017.9%204.5%209.3%204.5%205.7c0-1.8.9-3%202.4-3Z%27/%3E%3Cpath%20d=%27M17.4%202.7c1.5%200%202.4%201.2%202.4%203%200%203.6-1.3%2012.2-3.4%2015.6-.4.7-1.3.7-1.7%200-1.3-2.2-2.3-6.6-2.9-10.4.5-3.4%201.4-5.9%202.4-7.3.6-.6%201.4-.9%203.2-.9Z%27/%3E%3C/svg%3E)}
+#nac .signs li::before{background-image:url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27%23B4663F%27%3E%3Cellipse%20cx=%278.6%27%20cy=%275.4%27%20rx=%271.8%27%20ry=%272.5%27%20transform=%27rotate%28-12%208.6%205.4%29%27/%3E%3Cellipse%20cx=%2712.6%27%20cy=%274.4%27%20rx=%271.8%27%20ry=%272.6%27/%3E%3Cellipse%20cx=%2716.5%27%20cy=%275.8%27%20rx=%271.8%27%20ry=%272.5%27%20transform=%27rotate%2813%2016.5%205.8%29%27/%3E%3Cpath%20d=%27M12.5%208.9c3%200%205.1%201.6%205.1%205.1%200%204.2-2%207.5-5.1%207.5s-5.1-3.3-5.1-7.5c0-3.5%202.1-5.1%205.1-5.1Z%27/%3E%3C/svg%3E)}
+#ovins-caprins .signs li::before{background-image:url(data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%2024%2024%27%20fill=%27%23B4663F%27%3E%3Cpath%20d=%27M10.6%202.7c1.5%200%202.4%201.2%202.4%203%200%203.6-1.3%2012.2-3.4%2015.6-.4.7-1.3.7-1.7%200C5.8%2017.9%204.5%209.3%204.5%205.7c0-1.8.9-3%202.4-3Z%27/%3E%3Cpath%20d=%27M17.4%202.7c1.5%200%202.4%201.2%202.4%203%200%203.6-1.3%2012.2-3.4%2015.6-.4.7-1.3.7-1.7%200-1.3-2.2-2.3-6.6-2.9-10.4.5-3.4%201.4-5.9%202.4-7.3.6-.6%201.4-.9%203.2-.9Z%27/%3E%3C/svg%3E)}
+
+/* --- 12. Bandeau photo ---------------------------------------------------- */
+.band{position:relative;overflow:hidden;background:var(--deep)}
+.band-in{position:relative;z-index:1;padding-block:clamp(4rem,8vw,7rem)}
+
+/* Carte des cliniques : un SVG produit au build, aucune tuile, aucune requête.
+   Deux exemplaires du MÊME fichier (donc un seul téléchargement) : le second
+   porte un `filter: blur()` de valeur FIXE, que le navigateur rastérise une
+   fois. Seule l'opacité est animée, ce qui reste gratuit à faire défiler.
+   Animer le RAYON du flou, en revanche, forcerait un recalcul par image. */
+/* Le ratio doit suivre le SVG : il est passé en paysage quand l'Italie s'est
+   ajoutée. Laissé en 540/580, le dessin se retrouvait letterboxé dans une
+   boîte portrait, donc inutilement petit. */
+.carte{position:relative;width:100%;max-width:34rem;margin-inline:auto;
+  aspect-ratio:720/520}
+.carte img{position:absolute;inset:0;width:100%;height:100%}
+.carte{filter:drop-shadow(0 14px 34px rgba(0,0,0,.30))}
+.carte-net{opacity:calc(1 - var(--map-p,0))}
+.carte-flou{filter:blur(12px);opacity:var(--map-p,0)}
+
+/* Marqueurs de la carte ---------------------------------------------------
+   Posés en HTML par-dessus le SVG : on ne peut ni survoler ni styler
+   l'intérieur d'une <img>. Le libellé est TOUJOURS lisible ; le survol ne
+   fait qu'accentuer. Un libellé qui n'apparaîtrait qu'au survol serait muet
+   sur écran tactile. */
+.carte-pt{position:absolute;display:flex;align-items:center;gap:.5rem;
+  transform:translate(-50%,-50%);white-space:nowrap;
+  opacity:calc(1 - var(--map-p,0))}       /* suit le flou au défilement */
+.carte-pt-droite{flex-direction:row}
+.carte-pt-gauche{flex-direction:row-reverse}
+.carte-pt-dot{position:relative;flex:0 0 auto;width:9px;height:9px;border-radius:50%;
+  background:var(--sage);box-shadow:0 0 0 4px rgba(213,222,200,.20);
+  transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
+.carte-pt-lbl{font-size:1.05rem;font-weight:500;color:var(--text);
+  letter-spacing:-.005em;transition:color .25s var(--ease)}
+/* Le halo est un pseudo-élément : il épouse le point au lieu d'entourer sa
+   boîte, et il ne pousse rien dans la mise en page. */
+.carte-pt-dot::after{content:'';position:absolute;inset:-11px;border-radius:50%;
+  border:1px solid var(--sage);opacity:0;transform:scale(.6);
+  transition:opacity .3s var(--ease),transform .3s var(--ease)}
+
+@media (hover:hover) and (pointer:fine){
+  .carte-pt:hover .carte-pt-dot{transform:scale(1.35);
+    box-shadow:0 0 0 7px rgba(213,222,200,.26)}
+  .carte-pt:hover .carte-pt-dot::after{opacity:.75;transform:scale(1)}
+  .carte-pt:hover .carte-pt-lbl{color:var(--white)}
+}
+.carte-note{margin-top:1.1rem;text-align:center;font-size:.8rem;color:var(--text-faint)}
+.figure{margin:0;position:relative}
+.figure>picture,.figure>video{display:block;overflow:hidden;border-radius:var(--radius-lg);
+  background:var(--sand-2);box-shadow:var(--shadow-img)}
+/* Une vidéo garde son ratio et laisserait des bandes sans object-fit. */
+.figure>video{width:100%;height:100%;object-fit:cover}
+.figure img{width:100%;height:100%;object-fit:cover;transition:transform .8s var(--ease)}
+.figure figcaption{font-size:.83rem;color:var(--text-faint);margin-top:.7rem}
+.ratio-45>picture,.ratio-45>video{aspect-ratio:4/5}
+.ratio-11>picture,.ratio-11>video{aspect-ratio:1}
+.ratio-43>picture,.ratio-43>video{aspect-ratio:4/3}
+.ratio-32>picture,.ratio-32>video{aspect-ratio:3/2}
+.ratio-916>picture,.ratio-916>video{aspect-ratio:9/16}
+/* La vidéo fait 720 px de large : au-delà, elle serait agrandie et molle.
+   On la borne à sa taille native et on la centre dans sa colonne. */
+.figure-video{max-width:440px;margin-inline:auto}
+
+/* Bases : lieu, ville, secteur d'itinérance. Trois lignes empilées plutôt
+   qu'un paragraphe : on lit les trois secteurs d'un coup d'œil. */
+.bases{display:flex;flex-direction:column;gap:1.35rem}
+.bases li{position:relative;padding-left:1.4rem;display:flex;flex-direction:column;gap:.12rem}
+.bases li::before{content:'';position:absolute;left:0;top:.55em;width:7px;height:7px;
+  border-radius:50%;background:var(--apricot)}
+.bases-lieu{font-weight:600;font-size:1.06rem;color:#FBF7F1;letter-spacing:-.01em}
+.bases-ou{font-size:.9rem;color:var(--blush)}
+.bases-it{font-size:.9rem;color:var(--text-faint);margin-top:.15rem}
+
+/* --- 13. Parcours (à propos) ---------------------------------------------- */
+.tl{position:relative;display:grid;gap:0;padding-left:1.9rem}
+.tl::before{content:'';position:absolute;left:5px;top:.9rem;bottom:.9rem;width:1px;background:var(--rule)}
+.tl-item{position:relative;padding-block:1.15rem}
+.tl-item::before{content:'';position:absolute;left:-1.9rem;top:1.55rem;width:11px;height:11px;
+  border-radius:50%;background:var(--paper);border:1.5px solid var(--brass)}
+.tl-year{font-size:.78rem;font-weight:600;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--accent-text);margin-bottom:.3rem}
+.tl-item p{color:var(--text-soft);font-size:.96rem}
+
+/* --- 14. Formulaire ------------------------------------------------------- */
+.form{display:grid;gap:1.15rem}
+.field{display:flex;flex-direction:column;gap:.42rem;min-width:0}
+.field label{font-size:.855rem;font-weight:500;color:var(--text-soft)}
+.field .req{color:var(--brass-text)}
+.field input,.field select,.field textarea{
+  width:100%;background:var(--white);border:1px solid var(--line);border-radius:11px;
+  box-shadow:var(--shadow-img);
+  padding-block:.82rem;padding-inline:.95rem;font-size:.97rem;color:var(--ink);
+  transition:border-color .25s var(--ease),box-shadow .25s var(--ease),background-color .25s var(--ease)}
+.field textarea{resize:vertical;min-height:9.5rem;line-height:1.6}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5l5-5' fill='none' stroke='%236E6558' stroke-width='1.4' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right .95rem center;padding-right:2.4rem}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--olive);
+  box-shadow:0 0 0 3px rgba(89,103,74,.16)}
+.err{display:none;font-size:.83rem;color:#A6331F;align-items:center;gap:.35rem}
+.field[data-invalid='true'] input,.field[data-invalid='true'] select,.field[data-invalid='true'] textarea{
+  border-color:#C24A33;background:#FDF6F4}
+.check-wrap[data-invalid='true'] input{outline:2px solid #C24A33;outline-offset:2px}
+.field[data-invalid='true'] .err,.check-wrap[data-invalid='true'] .err{display:flex}
+.field-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+.check{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.7rem;align-items:start;
+  font-size:.875rem;color:var(--text-soft)}
+.check input{flex:0 0 auto;width:19px;height:19px;margin-top:.16rem;accent-color:var(--olive)}
+.form-note{font-size:.82rem;color:var(--text-faint)}
+.form-status{display:none;gap:.6rem;align-items:flex-start;border-radius:11px;
+  padding-block:.9rem;padding-inline:1rem;font-size:.9rem;line-height:1.5}
+.form-status[data-state='error']{display:flex;background:#FBEDE9;border:1px solid #E9C4B9;color:#7E2C1A}
+.form-status[data-state='ok']{display:flex;background:var(--olive-soft);border:1px solid #CBD6BF;color:var(--olive-deep)}
+.btn[data-loading='true'] .btn-label{opacity:0}
+.spinner{display:none;position:absolute;inset:0;margin:auto;width:18px;height:18px;border-radius:50%;
+  border:2px solid currentColor;border-top-color:transparent;animation:spin 1.1s linear infinite}
+.btn[data-loading='true'] .spinner{display:block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* --- 15. Contact direct --------------------------------------------------- */
+.contact-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1rem;align-items:center;
+  text-decoration:none;padding-block:1.05rem;border-bottom:1px solid var(--rule)}
+.contact-row:first-child{border-top:1px solid var(--rule)}
+.contact-ico{width:40px;height:40px;border-radius:11px;border:1px solid var(--rule);
+  display:grid;place-items:center;color:var(--accent-text);
+  transition:background-color .35s var(--ease),color .35s var(--ease),border-color .35s var(--ease)}
+.contact-k{font-size:.76rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)}
+.contact-v{font-size:1.05rem;font-weight:450;color:var(--text)}
+
+/* --- 16. Pied de page ----------------------------------------------------- */
+.site-foot{background:var(--deep);color:var(--text);padding-block:clamp(3rem,5vw,4.5rem) 2rem}
+.foot-grid{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(2,minmax(0,1fr));
+  gap:clamp(1.8rem,3.5vw,3rem)}
+.foot-title{font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);
+  margin-bottom:1rem}
+.foot-list{display:flex;flex-direction:column;gap:.6rem}
+.foot-list a{font-size:.925rem;color:var(--text-soft);text-decoration:none;width:fit-content;
+  transition:color .25s var(--ease)}
+/* Instagram : pictogramme seul dans le pied de page. Le nom du compte reste
+   dans l'intitulé accessible, sinon le lien n'annonce rien. */
+/* `.foot-list a` pose `width:fit-content` et l'emporte à spécificité (0,1,1)
+   contre (0,1,0) : sans les deux classes, la cible tactile retombait à 34 px. */
+.foot-list a.foot-insta{display:inline-grid;place-items:center;width:48px;height:48px;
+  margin-left:-.35rem;   /* le pictogramme s'aligne optiquement sur le texte au-dessus */
+  color:var(--text-soft);transition:color .25s var(--ease),transform .25s var(--ease)}
+.foot-bottom{display:flex;flex-wrap:wrap;gap:.6rem 1.5rem;align-items:center;justify-content:space-between;
+  margin-top:clamp(2.5rem,4vw,3.5rem);padding-top:1.5rem;border-top:1px solid var(--rule);
+  font-size:.82rem;color:var(--text-faint)}
+
+/* --- 17. CTA collant mobile + bannière cookies ---------------------------- */
+/* Les deux sont enfants directs de <body> : aucun ancêtre transformé ne peut
+   les décrocher de l'écran (cf. CLAUDE.md). Le CTA se décale de la hauteur
+   RÉELLE de la bannière, publiée dans --consent-h par ResizeObserver. */
+.mobile-cta{display:none;position:fixed;left:0;right:0;bottom:0;z-index:850;
+  gap:.6rem;padding-block:.7rem;padding-inline:.9rem;
+  padding-bottom:calc(.7rem + env(safe-area-inset-bottom,0px));
+  background:rgba(251,248,243,.94);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);
+  transform:translateY(110%);transition:transform .42s var(--ease),bottom .3s var(--ease)}
+.mobile-cta[data-in='true']{transform:none}
+.mobile-cta .btn{flex:1 1 0;min-width:0}
+html[data-consent='pending'] .mobile-cta[data-in='true']{bottom:var(--consent-h)}
+
+.consent{position:fixed;left:0;right:0;bottom:0;z-index:950;
+  background:var(--deep);color:#FBF8F3;border-top:1px solid rgba(251,248,243,.14);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  transform:translateY(110%);transition:transform .5s var(--ease)}
+.consent[data-in='true']{transform:none}
+.consent-in{display:flex;flex-wrap:wrap;align-items:center;gap:1rem;padding-block:1.1rem}
+.consent p{flex:1 1 22rem;font-size:.875rem;line-height:1.55;color:#DED5C6;margin:0}
+.consent p a{color:#C9D3BC}
+.consent-btns{display:flex;flex-wrap:wrap;gap:.55rem;flex:0 0 auto}
+
+/* --- 17b. Blocs repliables (téléphone) ------------------------------------
+   Sur grand écran, tout est ouvert et l'en-tête n'est pas cliquable : le
+   contenu se lit d'une traite. Sur téléphone, chaque bloc se replie pour que
+   la page reste parcourable au pouce.
+
+   Repli sans JavaScript : le HTML est livré OUVERT (data-open="true"), c'est
+   le script qui referme sur petit écran. Si le script ne tourne pas, on perd
+   le repli, jamais le contenu.
+
+   L'animation passe par grid-template-rows 0fr → 1fr : c'est la seule façon
+   d'animer vers une hauteur « auto » sans mesurer en JavaScript. */
+.acc{border-top:1px solid var(--rule)}
+.acc:last-of-type{border-bottom:1px solid var(--rule)}
+.acc-h{margin:0;font:inherit;letter-spacing:normal;line-height:inherit}
+.acc-head{
+  display:flex;align-items:center;gap:1rem;width:100%;text-align:left;
+  padding-block:1.15rem;padding-inline:0;   /* un <button> conteneur n'hérite jamais du padding natif */
+  background:none;border:0;cursor:default;color:inherit;
+  font-family:inherit;font-size:clamp(1.2rem,1.1rem + .45vw,1.42rem);
+  font-weight:400;line-height:1.25;letter-spacing:-.01em}
+.acc-head .acc-ico{flex:0 0 auto;width:42px;height:42px;border-radius:11px;
+  background:var(--olive-soft);color:var(--olive-deep);display:grid;place-items:center}
+.section-dark .acc-head .acc-ico,.dark .acc-head .acc-ico{background:rgba(201,211,188,.14);color:#C9D3BC}
+.acc-label{flex:1 1 auto;min-width:0}
+.acc-chev{flex:0 0 auto;display:none;width:30px;height:30px;border-radius:50%;
+  border:1px solid var(--rule);place-items:center;color:var(--accent-text);
+  transition:transform .42s var(--ease),background-color .3s var(--ease),color .3s var(--ease)}
+.acc-chev svg{width:14px;height:14px}
+.acc-body{display:grid;grid-template-rows:1fr;
+  transition:grid-template-rows .45s var(--ease)}
+.acc-inner{overflow:hidden;min-height:0;visibility:visible}
+.acc-inner>*{padding-bottom:1.35rem}
+/* Premier repli au chargement : sans transition. Une page qui met 450 ms
+   à raccourcir pendant qu'on cadre une ancre envoie la section visée
+   1408 px au-dessus de l'écran (mesuré). */
+.acc-sans-anim .acc-body{transition:none !important}
+.acc[data-open='false'] .acc-body{grid-template-rows:0fr}
+.acc[data-open='false'] .acc-inner{visibility:hidden;transition:visibility 0s .45s}
+.acc[data-open='false'] .acc-chev{transform:rotate(-90deg)}
+/* Version « carte » : reprend l'habillage des cartes hors repli */
+.acc-card{border:1px solid var(--rule);border-radius:var(--radius);
+  padding-inline:1.5rem;background:var(--surface);box-shadow:var(--shadow-img)}
+.acc-card:last-of-type{border-bottom:1px solid var(--rule)}
+/* Espèces : le titre reste un <h2>, l'icône vit dans le libellé du bouton */
+.acc-species{border-top:0}
+.acc-species:last-of-type{border-bottom:0}
+.acc-species .acc-head{font-size:clamp(1.35rem,1.05rem + 1.1vw,1.95rem);padding-block:.2rem .9rem}
+.acc-species .acc-label{display:flex;align-items:center;gap:.9rem}
+.acc-species .species-ico{flex:0 0 auto;display:block;width:46px;height:46px}
+.acc-species .species-ico img{width:100%;height:100%;object-fit:contain}
+.species-intro{margin-bottom:1.5rem}
+
+/* --- 17c. Volet de transition entre les pages ------------------------------
+   Un panneau plein qui se ferme avant de quitter la page, et s'ouvre à
+   l'arrivée. Il ne masque JAMAIS le contenu sans JavaScript : sans script il
+   reste hors champ et n'est jamais monté (le script pose data-volet sur
+   <html> ; sans lui, la règle d'ouverture ne s'applique pas).
+   `clip-path` plutôt que `transform` : rien ne déborde, et aucune matrice
+   résiduelle ne peut piéger les descendants `position: fixed`. */
+.volet{position:fixed;inset:0;z-index:1000;background:var(--deep);
+  display:grid;place-items:center;pointer-events:none;
+  clip-path:inset(0 0 100% 0);            /* replié en haut, invisible */
+  will-change:clip-path}
+/* Le monogramme du volet est l'écran de chargement du site : il mérite un
+   signe de vie. Deux mouvements distincts sur deux nœuds — la marque
+   respire, un arc tourne autour d'elle. Sur un seul nœud, la dernière
+   déclaration de `transform` écraserait l'autre en silence.
+   Boucle à 1,15 s : à 250 ms un tour de spinner clignote plus qu'il ne
+   tourne. */
+.volet-marque{opacity:0;position:relative;display:grid;place-items:center}
+/* Les deux boucles ne tournent QUE pendant l'attente : inutile d'animer un
+   élément replié hors de l'écran. */
+.volet-marque::after{content:'';position:absolute;width:104px;height:104px;
+  border-radius:50%;border:1.5px solid transparent;
+  border-top-color:var(--sage);border-right-color:rgba(199,200,186,.35);
+  opacity:0;transition:opacity .3s var(--ease)}
+html[data-volet='ferme'] .volet-marque::after,
+html[data-volet='couvre'] .volet-marque::after{opacity:.9;
+  animation:marque-tourne 1.15s linear infinite}
+html[data-volet='ferme'] .volet-marque img,
+html[data-volet='couvre'] .volet-marque img{
+  animation:marque-respire 2.4s var(--ease) infinite}
+@keyframes marque-tourne{to{transform:rotate(360deg)}}
+@keyframes marque-respire{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+html[data-volet='ferme'] .volet{clip-path:inset(0 0 0 0);
+  transition:clip-path .42s cubic-bezier(.7,0,.3,1)}
+html[data-volet='ferme'] .volet-marque{opacity:1;transition:opacity .3s .1s var(--ease)}
+html[data-volet='ouvre'] .volet{clip-path:inset(100% 0 0 0);
+  transition:clip-path .52s cubic-bezier(.7,0,.3,1)}
+html[data-volet='ouvre'] .volet-marque{opacity:0;transition:opacity .2s var(--ease)}
+/* À l'arrivée, le volet couvre déjà l'écran : il ne doit pas « tomber »
+   d'un coup avant que la transition d'ouverture ne démarre. */
+html[data-volet='couvre'] .volet{clip-path:inset(0 0 0 0)}
+html[data-volet='couvre'] .volet-marque{opacity:1}
+
+/* --- 18. Divers ----------------------------------------------------------- */
+.badge{display:inline-flex;align-items:center;gap:.45rem;font-size:.78rem;font-weight:500;
+  padding-block:.4rem;padding-inline:.75rem;border-radius:100px;background:var(--brass-soft);
+  color:var(--brass-text);border:1px solid rgba(143,110,68,.2)}
+.section-dark .badge{background:rgba(255,255,255,.08);color:#E4D3BB;border-color:rgba(255,255,255,.16)}
+.note{border-left:2px solid var(--brass);padding-left:1.15rem;color:var(--text-soft);
+  font-family:inherit;font-style:italic;font-size:1.08rem;line-height:1.5}
+.prose h2{margin-top:2.6rem;margin-bottom:.9rem}
+.prose h3{margin-top:1.9rem;margin-bottom:.6rem}
+.prose p+p{margin-top:1rem}
+.prose ul{margin-top:.8rem;display:flex;flex-direction:column;gap:.45rem}
+.prose li{position:relative;padding-left:1.2rem;color:var(--text-soft)}
+.prose li::before{content:'';position:absolute;left:0;top:.68em;width:5px;height:5px;border-radius:50%;background:var(--brass)}
+.prose a{color:var(--accent-text);text-underline-offset:3px}
+.todo{background:#FFF3D6;border:1px dashed #C99A2E;color:#6B4E10;border-radius:6px;
+  padding-block:.1rem;padding-inline:.4rem;font-size:.9em;font-weight:500}
+.err-code{font-family:inherit;font-size:clamp(5rem,16vw,11rem);line-height:.9;
+  color:#D2C3A6;letter-spacing:-.04em}   /* filigrane décoratif, 1,64:1 — le titre porte le sens */
+
+/* --- 19. Apparition au défilement ----------------------------------------- */
+/* `backwards` et non `both` : aucun transform résiduel ne doit subsister,
+   il deviendrait le bloc conteneur des descendants `position: fixed`. */
+[data-reveal]{opacity:0}
+[data-reveal].is-in{animation:reveal .85s var(--ease) backwards;animation-delay:var(--d,0ms);opacity:1}
+@keyframes reveal{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.word{display:inline-block;opacity:0}
+.is-in .word{animation:word .95s var(--ease) backwards;animation-delay:var(--d,0ms);opacity:1}
+@keyframes word{from{opacity:0;transform:translateY(.45em)}to{opacity:1;transform:none}}
+
+/* --- 20. Survol : uniquement sur pointeur fin ----------------------------- */
+@media (hover:hover) and (pointer:fine){
+  .btn:hover{transform:translateY(-2px);box-shadow:var(--shadow-1)}
+  .figure:hover>picture{box-shadow:var(--shadow-1)}
+  .btn:not(.btn-ghost):not(.btn-light):hover{background:var(--olive-deep);border-color:var(--olive-deep)}
+  .btn-ghost:hover{background:var(--ink);color:#FBF8F3;border-color:var(--ink)}
+  .head-tel:hover{background:var(--olive-deep);transform:translateY(-1px)}
+  .btn-light:hover{background:#fff;border-color:#fff}
+  .btn:active{transform:translateY(0)}
+  .link:hover::after{transform:scaleX(0);transform-origin:right}
+  .nav a:hover{color:var(--text);background:rgba(22,19,15,.045)}
+  .nav a:hover::after{transform:scaleX(1)}
+  .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-1);border-color:var(--sand-2)}
+  .tile:hover{transform:translateY(-2px);box-shadow:var(--shadow-1);border-color:var(--sand-2)}
+  .tile:hover::before{transform:scaleY(1)}
+  .tile:hover .tile-ico{transform:scale(1.07)}
+  .tile:hover .tile-go{background:var(--olive);border-color:var(--olive);color:#fff}
+  .tile:hover .tile-go .arw{transform:translateX(2px)}
+  .figure:hover img{transform:scale(1.045)}
+  .step:hover .step-n{background:var(--olive);border-color:var(--olive);color:#fff}
+  .chip:hover{border-color:var(--ink);color:var(--text)}
+  .acc-head[aria-expanded]:hover .acc-chev{background:var(--olive);border-color:var(--olive);color:#fff}
+  .chip[aria-current='true']:hover{color:#FBF8F3}
+  .foot-list a:hover{color:#FBF8F3}
+  .foot-insta:hover{color:#FBF8F3;transform:translateY(-1px)}
+  .contact-row:hover .contact-ico{background:var(--olive);border-color:var(--olive);color:#fff}
+  .contact-row:hover .contact-v{color:var(--accent-text)}
+  .drawer nav a:hover{color:var(--olive-deep)}
+}
+/* Un lien qui ne montre son libellé qu'au survol serait muet au doigt : rien
+   de tel ici. En revanche, l'état actif se voit aussi au clavier. */
+:focus-visible{outline:2px solid var(--olive);outline-offset:3px;border-radius:4px}
+.btn:focus-visible{outline-offset:3px}
+
+/* --- 21. Paliers ---------------------------------------------------------- */
+@media (max-width:1080px){
+  .foot-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+}
+@media (max-width:960px){
+  /* Le logo doublé (76 px) plus « Eva Antoine » à 2,12 rem ne tiennent pas à
+     côté du bouton d'appel et du burger : mesuré, le burger dépassait de 10 px
+     sur un écran de 390. On garde un agrandissement franc (+42 % pour la
+     marque, +53 % pour le nom) mais compatible avec les deux boutons. */
+  :root{--header-h:84px}
+  .brand-mark{width:54px;height:54px}
+  .brand-name{font-size:1.62rem;letter-spacing:-.025em}
+  .brand{gap:.7rem}
+  .nav,.head-cta{display:none}
+  .burger,.head-tel{display:flex}
+  .hero-grid{grid-template-columns:minmax(0,1fr);
+    grid-template-areas:'head' 'media' 'rest';row-gap:2rem}
+  .hero-frame{aspect-ratio:3/2}
+  .hero-badge{right:auto;left:1rem;top:1rem}
+  .cols-3,.cols-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .mobile-cta{display:flex}
+  body{padding-bottom:0}
+}
+@media (max-width:760px){
+  :root{--gutter:1.15rem}
+  .figure-video{max-width:320px}   /* 9/16 pleine largeur ferait 693 px de haut */
+  /* Seul le pictogramme se centre : le reste du pied de page reste aligné à
+     gauche, comme le reste du site. */
+  /* même spécificité que la règle de base (0,2,1), sinon son margin-left
+     l'emporte et le centrage ne s'applique pas. */
+  .foot-list a.foot-insta{margin-inline:auto}
+  .acc-head{cursor:pointer}
+  .acc-chev{display:grid}
+  .acc-card{padding-inline:1.15rem}
+  /* Repliées, les six espèces occupaient 918 px : 73 px d'en-tête plus 80 px
+     de marges de section chacune. On supprime les marges (les bordures de
+     l'accordéon suffisent à séparer) et on resserre l'en-tête : ~400 px. */
+  .species{padding-block:0}
+  .species+.species{border-top:0}
+  .acc-species{border-top:1px solid var(--rule)}
+  .acc-species:last-of-type{border-bottom:1px solid var(--rule)}
+  .acc-species .acc-head{font-size:1.22rem;padding-block:.85rem;gap:.75rem}
+  .acc-species .acc-label{gap:.75rem}
+  .acc-species .species-ico{width:38px;height:38px}
+  .species-intro{margin-bottom:1.1rem}
+  .signs{columns:1}
+  .cols-2,.cols-3,.cols-4{grid-template-columns:minmax(0,1fr)}
+  .foot-grid{grid-template-columns:minmax(0,1fr);gap:2rem}
+  .step{grid-template-columns:minmax(0,1fr);gap:.85rem}
+  .consent-in{flex-direction:column;align-items:stretch;gap:.85rem}
+  .consent p{flex:0 0 auto}   /* en colonne, la base flex est une HAUTEUR */
+  .consent-btns .btn{flex:1 1 0}
+  /* Le titre vient SUR la photo. Les deux occupent la même zone de grille ;
+     l'ordre de peinture vient de z-index, que les éléments de grille honorent
+     sans `position`.
+     Le VOILE (.hero-frame::after) porte tout le contraste et se fond dans la
+     photo ; le FLOU est sur un pseudo-élément MASQUÉ, pour se dissoudre vers
+     le haut sans emporter le texte. Si `backdrop-filter` n'est pas géré, on
+     perd le flou, jamais la lisibilité. */
+  .hero{padding-block:0 clamp(2.2rem,4vw,3rem)}
+  .hero-grid{grid-template-areas:'media' 'rest';row-gap:1.8rem}
+  /* Le voile est porté par .hero-head ELLE-MÊME, pas par un frère : le contraste
+     du titre ne dépend alors plus d'un autre élément qu'on pourrait retirer
+     sans s'en apercevoir. Le panneau couvre toute la photo, son contenu est
+     poussé en bas, et le dégradé s'éteint avant le haut : le fondu court sur
+     toute la hauteur de l'image, sans aucune arête. */
+  .hero-head{grid-area:media;z-index:2;align-self:stretch;justify-content:flex-end;gap:.9rem;
+    padding-block:0 1.6rem;padding-inline:1.15rem;
+    border-radius:0 0 var(--radius-lg) var(--radius-lg);
+    background:linear-gradient(to top,
+      rgba(18,15,11,.94) 0%, rgba(18,15,11,.88) 11%, rgba(18,15,11,.70) 26%,
+      rgba(18,15,11,.42) 44%, rgba(18,15,11,.16) 64%, rgba(18,15,11,0) 86%);
+    opacity:calc(1 - var(--hero-p,0) * 1.3);   /* le titre s'efface un peu après la photo */
+    --text:#FBF8F3;--text-soft:#EDE7DC;--text-faint:#CFC5B4;--accent-text:#D8E0CC}
+  .hero-head::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+    border-radius:inherit;
+    backdrop-filter:blur(16px) saturate(1.15);-webkit-backdrop-filter:blur(16px) saturate(1.15);
+    -webkit-mask-image:linear-gradient(to top,#000 0%,#000 22%,rgba(0,0,0,.4) 42%,transparent 62%);
+    mask-image:linear-gradient(to top,#000 0%,#000 22%,rgba(0,0,0,.4) 42%,transparent 62%)}
+  .hero-head h1{color:#FBF8F3;font-size:clamp(2.3rem,1.3rem + 4.2vw,3.2rem)}
+  /* « Le plus imposant possible » : la photo prend presque tout l'écran, en
+     laissant paraître le haut de la suite pour inviter à faire défiler. */
+  .hero-frame{aspect-ratio:auto;min-height:0;
+    height:min(calc(100svh - var(--header-h) - 3.5rem),720px);
+    border-radius:0 0 var(--radius-lg) var(--radius-lg)}
+  .hero-frame::after{opacity:0}   /* le voile vit désormais sur .hero-head */
+  .hero-media-cap{display:none}
+  .hero-cta{width:100%}
+  /* 19rem : le libellé le plus long du site (« Voir les signes par espèce »)
+     réclame 296 px. En dessous, les deux boutons doivent s'EMPILER plutôt que
+     de se serrer. Mesuré de 375 à 1280 px, aucune largeur ne le fait plier. */
+  .hero-cta .btn{flex:1 1 19rem}
+}
+@supports not (height: 100svh){
+  @media (max-width:760px){
+    .hero-frame{height:min(calc(100vh - var(--header-h) - 3.5rem),720px)}
+  }
+}
+@media (max-width:420px){
+  .brand-role{display:none}
+  .hero-media-cap{font-size:.76rem}
+}
+/* Cibles tactiles : le besoin vient du POINTEUR, pas de la largeur d'écran. */
+@media (pointer:coarse){
+  .nav a,.foot-list a,.chip,.drawer nav a{min-height:44px;display:flex;align-items:center}
+  .foot-list a{padding-block:.35rem}
+  .btn{min-height:44px}
+  .contact-row{min-height:56px}
+}
+
+/* --- 22. Mouvement réduit ------------------------------------------------- */
+/* Couper animation/transition ne suffit pas : il faut aussi neutraliser
+   transform, filter et clip-path, sinon un élément reste masqué à vie. */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;scroll-behavior:auto !important}
+  [data-reveal],[data-reveal].is-in,.word,.is-in .word{opacity:1 !important;transform:none !important}
+  .hero-frame img,.hero-frame picture{transform:none !important;animation:none !important}
+  .hero-blur-wrap{display:none}
+  .hero-video{animation:none !important;transform:none !important}
+  .carte-flou{display:none}
+  .carte-net{opacity:1 !important}
+  .hero-head,.hero-media-cap{opacity:1 !important}
+  .btn-shine::before{display:none}
+  .acc-body{transition:none !important}
+  .drawer nav a,.drawer-foot>*{opacity:1 !important;transform:none !important}
+  .volet{display:none !important}
+}
+@media print{
+  .site-head,.drawer,.mobile-cta,.consent,.skip,.speciesbar{display:none !important}
+  body{background:#fff}
+  a[href^='http']::after{content:' (' attr(href) ')';font-size:.8em;color:#666}
+}
