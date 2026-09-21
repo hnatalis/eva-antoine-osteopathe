@@ -5,9 +5,7 @@
 window.SITE_CONFIG = {
 
   /* Adresse définitive du site, sans barre oblique finale.
-     Sert aux liens de partage. À corriger le jour où le nom de domaine change.
-     ⚠ La même adresse est écrite dans `_source/contenu/global/identite.json`,
-     d'où sont tirés les liens canoniques et le plan du site. Changer les deux. */
+     Sert aux liens de partage. À corriger le jour où le nom de domaine change. */
   siteUrl: 'https://hnatalis.github.io/eva-antoine-osteopathe',
 
   /* ---- Formulaire de contact -------------------------------------------
@@ -17,9 +15,9 @@ window.SITE_CONFIG = {
      'formsubmit' : aucun compte à créer. Coller ci-dessous l'adresse
                     https://formsubmit.co/ajax/VOTRE-JETON
                     Le jeton s'obtient une fois pour toutes : voir GUIDE.md,
-                    « Activer le formulaire de contact ».
+                    « Recevoir les messages du formulaire ».
      'formspree'  : variante avec compte (formspree.io), gratuite jusqu'à
-                    50 messages par mois. Coller l'adresse du formulaire.
+                    50 messages par mois.
      'aucun'      : l'envoi est désactivé ; le formulaire affiche d'emblée le
                     téléphone et l'e-mail. C'est aussi ce qui se passe tout
                     seul si `endpoint` est vide, pour qu'un réglage oublié ne

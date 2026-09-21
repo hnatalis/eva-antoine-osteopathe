@@ -192,6 +192,27 @@ em,.serif-em{font-style:italic}
   transition:transform .38s var(--ease)}
 .nav a[aria-current='page']{color:var(--text)}
 .nav a[aria-current='page']::after{transform:scaleX(1)}
+/* Sélecteur de langue. Formes longues partout : `.lang` cohabite avec les
+   règles génériques `.drawer nav` / `.drawer nav a`, et un raccourci y
+   écraserait des côtés qu'on ne voulait pas toucher. */
+.lang{display:flex;align-items:center;gap:.1rem;flex:0 0 auto;margin-inline:.35rem}
+.lang a{display:inline-flex;align-items:center;justify-content:center;
+  min-width:2.1rem;padding-block:.34rem;padding-inline:.3rem;border-radius:7px;
+  text-decoration:none;font-size:.78rem;font-weight:700;letter-spacing:.06em;
+  color:var(--text-faint);
+  transition:color .25s var(--ease),background-color .25s var(--ease)}
+.lang a.on{color:var(--text);background:var(--sand-2)}
+@media (hover:hover) and (pointer:fine){
+  .lang a:hover{color:var(--text);background:var(--sand-2)}
+}
+/* Dans le tiroir, `.drawer nav{flex-direction:column}` empilerait les trois
+   codes l'un sous l'autre : il faut redire la rangée. Et `.drawer nav a`
+   impose une grande taille de menu, à ramener à celle d'un bouton. */
+.drawer .lang{flex-direction:row;margin-inline:0;margin-bottom:.4rem;gap:.4rem}
+.drawer .lang a{flex:0 0 auto;min-width:44px;min-height:44px;
+  padding-block:.5rem;padding-inline:.5rem;font-size:.92rem;font-weight:700;
+  border:1px solid var(--line);border-radius:9px;color:var(--text-faint)}
+.drawer .lang a.on{color:var(--text);background:var(--sand-2)}
 .head-cta{flex:0 0 auto}
 .head-tel{display:none;flex:0 0 auto;width:44px;height:44px;padding:0;border:0;border-radius:50%;
   background:var(--ink);color:#FBF8F3;align-items:center;justify-content:center;text-decoration:none;
@@ -381,41 +402,6 @@ em,.serif-em{font-style:italic}
 /* Le ratio doit suivre le SVG : il est passé en paysage quand l'Italie s'est
    ajoutée. Laissé en 540/580, le dessin se retrouvait letterboxé dans une
    boîte portrait, donc inutilement petit. */
-.carte{position:relative;width:100%;max-width:34rem;margin-inline:auto;
-  aspect-ratio:720/520}
-.carte img{position:absolute;inset:0;width:100%;height:100%}
-.carte{filter:drop-shadow(0 14px 34px rgba(0,0,0,.30))}
-.carte-net{opacity:calc(1 - var(--map-p,0))}
-.carte-flou{filter:blur(12px);opacity:var(--map-p,0)}
-
-/* Marqueurs de la carte ---------------------------------------------------
-   Posés en HTML par-dessus le SVG : on ne peut ni survoler ni styler
-   l'intérieur d'une <img>. Le libellé est TOUJOURS lisible ; le survol ne
-   fait qu'accentuer. Un libellé qui n'apparaîtrait qu'au survol serait muet
-   sur écran tactile. */
-.carte-pt{position:absolute;display:flex;align-items:center;gap:.5rem;
-  transform:translate(-50%,-50%);white-space:nowrap;
-  opacity:calc(1 - var(--map-p,0))}       /* suit le flou au défilement */
-.carte-pt-droite{flex-direction:row}
-.carte-pt-gauche{flex-direction:row-reverse}
-.carte-pt-dot{position:relative;flex:0 0 auto;width:9px;height:9px;border-radius:50%;
-  background:var(--sage);box-shadow:0 0 0 4px rgba(213,222,200,.20);
-  transition:transform .25s var(--ease),box-shadow .25s var(--ease)}
-.carte-pt-lbl{font-size:1.05rem;font-weight:500;color:var(--text);
-  letter-spacing:-.005em;transition:color .25s var(--ease)}
-/* Le halo est un pseudo-élément : il épouse le point au lieu d'entourer sa
-   boîte, et il ne pousse rien dans la mise en page. */
-.carte-pt-dot::after{content:'';position:absolute;inset:-11px;border-radius:50%;
-  border:1px solid var(--sage);opacity:0;transform:scale(.6);
-  transition:opacity .3s var(--ease),transform .3s var(--ease)}
-
-@media (hover:hover) and (pointer:fine){
-  .carte-pt:hover .carte-pt-dot{transform:scale(1.35);
-    box-shadow:0 0 0 7px rgba(213,222,200,.26)}
-  .carte-pt:hover .carte-pt-dot::after{opacity:.75;transform:scale(1)}
-  .carte-pt:hover .carte-pt-lbl{color:var(--white)}
-}
-.carte-note{margin-top:1.1rem;text-align:center;font-size:.8rem;color:var(--text-faint)}
 .figure{margin:0;position:relative}
 .figure>picture,.figure>video{display:block;overflow:hidden;border-radius:var(--radius-lg);
   background:var(--sand-2);box-shadow:var(--shadow-img)}
@@ -434,8 +420,13 @@ em,.serif-em{font-style:italic}
 
 /* Bases : lieu, ville, secteur d'itinérance. Trois lignes empilées plutôt
    qu'un paragraphe : on lit les trois secteurs d'un coup d'œil. */
-.bases{display:flex;flex-direction:column;gap:1.35rem}
-.bases li{position:relative;padding-left:1.4rem;display:flex;flex-direction:column;gap:.12rem}
+/* Trois secteurs côte à côte. `min-width:0` sur les enfants : un élément de
+   grille a une largeur minimale égale à son contenu, un seul libellé long
+   élargirait sinon toute la page. */
+.bases{display:grid;gap:1.6rem 2.6rem;margin-top:2.6rem;
+  grid-template-columns:repeat(auto-fit,minmax(14rem,1fr))}
+.bases li{position:relative;min-width:0;padding-left:1.4rem;display:flex;
+  flex-direction:column;gap:.12rem}
 .bases li::before{content:'';position:absolute;left:0;top:.55em;width:7px;height:7px;
   border-radius:50%;background:var(--apricot)}
 .bases-lieu{font-weight:600;font-size:1.06rem;color:#FBF7F1;letter-spacing:-.01em}
@@ -703,6 +694,24 @@ html[data-volet='couvre'] .volet-marque{opacity:1}
 @media (max-width:1080px){
   .foot-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
 }
+/* Entre 961 et 1100 px, l'en-tête complet NE TIENT PAS : mesuré, il lui faut
+   1105 px, et la page défilait horizontalement sur toute cette plage — un
+   portable de 1024 est en plein dedans. Le coupable est le bouton d'appel,
+   qui porte le numéro au complet. On garde la navigation (elle vaut mieux
+   qu'un burger à cette largeur) et on rend le bouton à son pictogramme rond,
+   en resserrant un peu les entrées de menu. Il ne faut plus alors que 932 px.
+   Le palier téléphone plus bas continue de tout replier sous 961 px.
+
+   Seuil à 1130 et non 1105 : la barre de défilement prend une quinzaine de
+   pixels que la requête média ne compte pas toujours de la même façon. Un
+   seuil calé AU RAS du besoin laissait 3 px de débordement à 1101 px —
+   mesuré. On garde donc une marge, plutôt que de raisonner sur le pixel. */
+@media (max-width:1130px){
+  .head-cta{display:none}
+  .head-tel{display:flex}
+  .nav a{padding-inline:.5rem}
+  .lang{margin-inline:.15rem}
+}
 @media (max-width:960px){
   /* Le logo doublé (76 px) plus « Eva Antoine » à 2,12 rem ne tiennent pas à
      côté du bouton d'appel et du burger : mesuré, le burger dépassait de 10 px
@@ -712,7 +721,7 @@ html[data-volet='couvre'] .volet-marque{opacity:1}
   .brand-mark{width:54px;height:54px}
   .brand-name{font-size:1.62rem;letter-spacing:-.025em}
   .brand{gap:.7rem}
-  .nav,.head-cta{display:none}
+  .nav,.head-cta,.site-head .lang{display:none}
   .burger,.head-tel{display:flex}
   .hero-grid{grid-template-columns:minmax(0,1fr);
     grid-template-areas:'head' 'media' 'rest';row-gap:2rem}
@@ -820,8 +829,6 @@ html[data-volet='couvre'] .volet-marque{opacity:1}
   .hero-frame img,.hero-frame picture{transform:none !important;animation:none !important}
   .hero-blur-wrap{display:none}
   .hero-video{animation:none !important;transform:none !important}
-  .carte-flou{display:none}
-  .carte-net{opacity:1 !important}
   .hero-head,.hero-media-cap{opacity:1 !important}
   .btn-shine::before{display:none}
   .acc-body{transition:none !important}

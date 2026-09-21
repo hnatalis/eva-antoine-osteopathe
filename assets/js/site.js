@@ -168,32 +168,7 @@
     window.addEventListener('resize', planifier);
   }
 
-  /* --- 7. Carte : mise au point au défilement -----------------------------
-     Floue quand elle est loin, nette quand elle arrive au centre de l'écran.
-     Même mécanique que le héros : on ne touche jamais au RAYON du flou, on
-     croise deux exemplaires du même fichier par l'opacité. */
-  var carte = $('[data-carte]');
-  if (carte && !reduce) {
-    var attenteCarte = false;
-    var majCarte = function () {
-      attenteCarte = false;
-      var r = carte.getBoundingClientRect();
-      var centre = r.top + r.height / 2;
-      var ecart = Math.abs(centre - window.innerHeight / 2)
-                / (window.innerHeight / 2 + r.height / 2);
-      var p = ecart * 1.75 - 0.28;          // nette sur une plage centrale large
-      p = p < 0 ? 0 : (p > 1 ? 1 : p);
-      carte.style.setProperty('--map-p', p.toFixed(3));
-    };
-    var planifierCarte = function () {
-      if (!attenteCarte) { attenteCarte = true; requestAnimationFrame(majCarte); }
-    };
-    majCarte();
-    window.addEventListener('scroll', planifierCarte, { passive: true });
-    window.addEventListener('resize', planifierCarte);
-  }
-
-  /* --- 8. CTA collant mobile --------------------------------------------- */
+  /* --- 7. CTA collant mobile --------------------------------------------- */
   var cta = $('.mobile-cta');
   if (cta) {
     var trigger = $('[data-cta-after]') || $('.hero');
@@ -206,7 +181,7 @@
     window.addEventListener('resize', toggle);
   }
 
-  /* --- 9. Bannière cookies -----------------------------------------------
+  /* --- 8. Bannière cookies -----------------------------------------------
      Elle et le CTA collant sont tous deux fixés en bas : la bannière publie
      sa hauteur RÉELLE dans --consent-h pour que le CTA se décale au-dessus.
      offsetHeight et non getBoundingClientRect : l'élément porte un translateY.
@@ -261,7 +236,7 @@
     });
   }
 
-  /* --- 10. Formulaire de contact ------------------------------------------ */
+  /* --- 9. Formulaire de contact ------------------------------------------ */
   var form = $('#contact-form');
   if (form) {
     var status = $('.form-status', form);
@@ -328,16 +303,8 @@
       var mode = CF.mode || 'formsubmit';
       var url = CF.endpoint || '';
 
-      var replier = function (html) {
-        submit.removeAttribute('data-loading');
-        submit.disabled = false;
-        if (!status) return;
-        status.setAttribute('data-state', 'error');
-        $('.form-status-txt', status).innerHTML = html;
-        status.scrollIntoView({ block: 'center', behavior: reduce ? 'auto' : 'smooth' });
-      };
       /* Les coordonnées sont LUES DANS LA PAGE, pas recopiées ici : elles
-         viennent de `identite.json` et ne doivent jamais diverger entre
+         viennent d'identite.json et ne doivent jamais diverger entre
          l'affichage et ce message de secours. Le téléphone est l'objectif
          n°1 du site. Si les liens manquent, on n'invente rien. */
       var lien = function (sel) {
@@ -351,6 +318,14 @@
                       : tel ? 'Vous pouvez me joindre directement au ' + tel + '.'
                       : mel ? 'Vous pouvez m’écrire à ' + mel + '.' : '';
 
+      var replier = function (html) {
+        submit.removeAttribute('data-loading');
+        submit.disabled = false;
+        if (!status) return;
+        status.setAttribute('data-state', 'error');
+        $('.form-status-txt', status).innerHTML = html;
+      };
+
       if (mode === 'aucun' || !url) {
         replier('L’envoi depuis le site n’est pas encore activé. ' + coordonnees);
         return;
@@ -362,7 +337,7 @@
       /* FormData et non JSON : `multipart/form-data` fait partie des types que
          le navigateur envoie SANS requête préalable (préflight). Un POST en
          `application/json` en déclencherait une, et la moindre lacune CORS
-         côté service ferait échouer l'envoi avant toute réponse HTTP — une
+         côté service ferait échouer l'envoi avant toute réponse HTTP, une
          erreur qu'aucun `if (!r.ok)` ne voit jamais passer. */
       fetch(url, {
         method: 'POST',
@@ -377,7 +352,7 @@
     });
   }
 
-  /* --- 11. Blocs repliables ------------------------------------------------
+  /* --- 10. Blocs repliables ------------------------------------------------
      Le HTML arrive OUVERT : sans ce script, rien n'est caché. C'est ici qu'on
      replie, et seulement sous 760 px. Au-dessus, l'en-tête cesse d'être un
      bouton (on retire aria-expanded et le tabindex) pour ne pas annoncer une
@@ -494,7 +469,7 @@
     }, 90);
   }
 
-  /* --- 12. Volet de transition entre les pages ---------------------------
+  /* --- 11. Volet de transition entre les pages ---------------------------
      Ferme avant de quitter la page, ouvre à l'arrivée. Sans JavaScript, rien
      ne se passe et les liens fonctionnent normalement : le volet reste replié
      tant que <html> ne porte pas data-volet.
@@ -569,6 +544,33 @@
     });
   }
 
-  /* --- 13. Année du pied de page ----------------------------------------- */
+  /* --- 12. Année du pied de page ----------------------------------------- */
   $$('[data-year]').forEach(function (el) { el.textContent = new Date().getFullYear(); });
+
+  /* --- 13. 404 multilingue -------------------------------------------------
+     Netlify servait `/en/404.html` et `/it/404.html` grâce à deux règles de
+     redirection. GitHub Pages n'en accepte aucune : il sert TOUJOURS le
+     `/404.html` de la racine, en français, même pour une adresse inconnue
+     sous /en/ ou /it/. Un visiteur anglophone tombait alors sur du français.
+
+     On rattrape ici, dans un fichier EXTERNE : la politique de sécurité
+     interdit le script en ligne, un `<script>` glissé dans la page serait
+     bloqué sans le moindre message.
+
+     Aucune boucle possible : sur `/en/404.html`, la langue du document vaut
+     déjà « en », donc la condition est fausse. Le code HTTP reste 404 pour
+     l'adresse d'origine ; seul l'affichage suit la langue. */
+  if (document.querySelector('meta[name="page-404"]')) {
+    try {
+      var base = new URL(CFG.siteUrl || '/', location.origin).pathname;
+      if (base.charAt(base.length - 1) !== '/') base += '/';
+      var reste = location.pathname.indexOf(base) === 0
+                ? location.pathname.slice(base.length)
+                : location.pathname.replace(/^\//, '');
+      var demandee = (/^(en|it)\//.exec(reste) || [])[1];
+      if (demandee && demandee !== document.documentElement.lang) {
+        location.replace(base + demandee + '/404.html');
+      }
+    } catch (e) { /* URL inattendue : on garde la page française */ }
+  }
 })();

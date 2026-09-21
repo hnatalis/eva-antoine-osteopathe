@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /eva-antoine-osteopathe/
 Disallow: /eva-antoine-osteopathe/merci.html
+Disallow: /eva-antoine-osteopathe/en/merci.html
+Disallow: /eva-antoine-osteopathe/it/merci.html
 
 Sitemap: https://hnatalis.github.io/eva-antoine-osteopathe/sitemap.xml
